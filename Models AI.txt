@@ -1,0 +1,57 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+datos = pd.read_csv("data_all_complete.csv")
+
+X_train, X_test, y_train, y_test = train_test_split(datos.iloc[:, :-1], datos.iloc[:, -1], test_size=0.2, random_state=1)
+from imblearn.over_sampling import SMOTE
+smote = SMOTE()
+X_resampled, Y_resampled = smote.fit_resample(X_train, y_train)
+import numpy as np
+X_train= np.array(X_resampled)
+X_test= np.array(X_test)
+Y_train= np.array(Y_resampled)
+Y_test= np.array(y_test)
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+
+
+#Declarar modelos
+modelos = {
+    "Naive Bayes": GaussianNB(),
+    "k-NN": KNeighborsClassifier(),
+    "LDA": LinearDiscriminantAnalysis(),
+    "QDA": QuadraticDiscriminantAnalysis(),
+    "Árbol de Decisión": DecisionTreeClassifier(),
+    "Bosque Aleatorio": RandomForestClassifier(),
+    "SVM": SVC()
+}
+
+#Definiendo métricas de evaluación
+from sklearn.metrics import classification_report, accuracy_score
+
+#Etrenando modelos
+resultados = {}
+for nombre, modelo in modelos.items():
+    modelo.fit(X_train, Y_train)
+    Y_pred = modelo.predict(X_test)
+    resultados[nombre] = {
+        "Exactitud": accuracy_score(Y_test, Y_pred),
+        "Reporte de Clasificación": classification_report(Y_test, Y_pred)
+    }
+
+#Análisis de desempeño
+for nombre, resultado in resultados.items():
+    print(f"Modelo: {nombre}")
+    print(f"Exactitud: {resultado['Exactitud']:.4f}")
+    print("Reporte de Clasificación:")
+    print(resultado["Reporte de Clasificación"])
+    print("-" * 50)
